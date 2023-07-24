@@ -1,4 +1,4 @@
-package com.alan.jetpackcomposeinstagram
+package com.alan.jetpackcomposeinstagram.login
 
 import android.app.Activity
 import androidx.compose.foundation.Image
@@ -20,8 +20,6 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -31,6 +29,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,20 +42,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.alan.jetpackcomposeinstagram.ui.theme.JetpackComposeInstagramTheme
+import com.alan.jetpackcomposeinstagram.R
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(loginViewModel: LoginViewModel) {
     Box(
         Modifier
             .fillMaxSize()
             .padding(8.dp)
     ) {
         Header(Modifier.align(Alignment.TopEnd))
-        Body(Modifier.align(Alignment.Center))
+        Body(Modifier.align(Alignment.Center), loginViewModel)
         Footer(Modifier.align(Alignment.BottomCenter))
     }
 }
@@ -93,29 +91,20 @@ fun SignUp() {
 }
 
 @Composable
-fun Body(modifier: Modifier) {
-    var email by remember {
-        mutableStateOf("")
-    }
-    var password by remember {
-        mutableStateOf("")
-    }
-
-    var isLoginEnable by remember {
-        mutableStateOf(false)
-    }
+fun Body(modifier: Modifier, loginViewModel: LoginViewModel) {
+    val email: String by loginViewModel.email.observeAsState(initial = "")
+    val password: String by loginViewModel.password.observeAsState(initial = "")
+    val isLoginEnable: Boolean by loginViewModel.isLoginEnable.observeAsState(initial = false)
 
     Column(modifier = modifier) {
         ImageLogo(Modifier.align(Alignment.CenterHorizontally))
         Spacer(modifier = Modifier.size(16.dp))
         Email(email) {
-            email = it
-            isLoginEnable = enableLogin(email, password)
+            loginViewModel.onLoginChanged(email = it, password = password)
         }
         Spacer(modifier = Modifier.size(8.dp))
         Password(password) {
-            password = it
-            isLoginEnable = enableLogin(email, password)
+            loginViewModel.onLoginChanged(email = email, password = it)
         }
         Spacer(modifier = Modifier.size(8.dp))
         ForgotPassword(Modifier.align(Alignment.End))
@@ -288,18 +277,4 @@ fun Header(modifier: Modifier) {
         contentDescription = "Close",
         modifier = modifier.clickable { activity.finish() }
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewLoginScreen() {
-    JetpackComposeInstagramTheme {
-        // A surface container using the 'background' color from the theme
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colors.background
-        ) {
-            LoginScreen()
-        }
-    }
 }
